@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Audio">
       <UniqueIdentifier>{c838c4bd-9e49-493f-9fe4-50a81442ea1f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Crypto">
+      <UniqueIdentifier>{b6a7f571-3173-4e35-927b-8f5c364090f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Crypto">
+      <UniqueIdentifier>{b52a05f6-a385-4638-a753-a9689b150053}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -60,6 +66,9 @@
     <ClInclude Include="AudioPlayer.h">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="Crypto.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LANCall.cpp">
@@ -85,6 +94,9 @@
     </ClCompile>
     <ClCompile Include="AudioPlayer.cpp">
       <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto.cpp">
+      <Filter>Source Files\Crypto</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

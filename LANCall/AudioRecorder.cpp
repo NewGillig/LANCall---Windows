@@ -40,7 +40,7 @@ AudioRecorder::AudioRecorder()
 	readPos = 0;
 	finalPos = BUFSIZE;
 	wh.lpData = whBuf;
-	wh.dwBufferLength = 640;
+	wh.dwBufferLength = 2000;
 	wh.dwBytesRecorded = 0;
 	wh.dwUser = NULL;
 	wh.dwFlags = 0;

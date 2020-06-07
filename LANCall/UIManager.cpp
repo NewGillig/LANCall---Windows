@@ -23,6 +23,7 @@ HWND p2pRingingRefuseButton;
 HWND p2pTalkingTargetIpText;
 HWND p2pTalkingEndButton;
 
+
 struct IPv4 ip;
 
 Server *msgServer = NULL;
@@ -46,8 +47,28 @@ HANDLE clientListenerThread;
 
 void switchPage(int pagex);
 
+
+AutoSeededRandomPool prng;
+CryptoPP::byte key[AES::MAX_KEYLENGTH];
+CryptoPP::byte iv[AES::BLOCKSIZE];
+
+CFB_Mode<AES>::Encryption *cfbEncryption;
+CFB_Mode<AES>::Decryption *cfbDecryption;
+
+
+
+
+
+
+
+
+
+
 DWORD WINAPI serverListener(LPVOID IpParam)
 {
+	char cipherDataBuf[200000];
+	memset(cipherDataBuf, 0, 200000);
+	int place = 0;
 	while (1)
 	{
 		Sleep(1);
@@ -71,15 +92,59 @@ DWORD WINAPI serverListener(LPVOID IpParam)
 			if (mode == 0 && serverStatus == 3 )
 			{
 				char voiceBuf[4000];
+				char encryptVoiceBuf[4000];
+
 				int size = 0;
 				memset(voiceBuf, 0, 4000);
-				size = voiceServer->fetchData(4000, voiceBuf);
-				audioPlayer.writeData(size, voiceBuf);
+				memset(encryptVoiceBuf, 0, 4000);
+				size = voiceServer->fetchData(4000, encryptVoiceBuf);
+				if (place > 180000)
+				{
+					place = 0;
+					memset(cipherDataBuf, 0, 200000);
+				}
+				if (size > 0)
+				{
+					memcpy(cipherDataBuf + place, encryptVoiceBuf, size);
+					place += size;
+				}
+				int start = -1;
+				int end = -1;
+				for (int i = 0; i < place - 9; i++)
+				{
+					if (cipherDataBuf[i] == '1'&&cipherDataBuf[i + 1] == '2'&&cipherDataBuf[i + 2] == '3'&&cipherDataBuf[i + 3] == '4'&&cipherDataBuf[i + 4] == '5'&&cipherDataBuf[i + 5] == '6'&&cipherDataBuf[i + 6] == '7'&&cipherDataBuf[i + 7] == '8'&&cipherDataBuf[i + 8] == '9')
+					{
+						start = i + 9;
+					}
+					if (start != -1 && cipherDataBuf[i] == '9'&&cipherDataBuf[i + 1] == '8'&&cipherDataBuf[i + 2] == '7'&&cipherDataBuf[i + 3] == '6'&&cipherDataBuf[i + 4] == '5'&&cipherDataBuf[i + 5] == '4'&&cipherDataBuf[i + 6] == '3'&&cipherDataBuf[i + 7] == '2'&&cipherDataBuf[i + 8] == '1')
+					{
+						end = i;
+						cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
+						cfbDecryption->ProcessData((byte*)voiceBuf, (byte*)cipherDataBuf + start, end - start);
+						delete cfbDecryption;
+						audioPlayer.writeData(end - start, voiceBuf);
+						memcpy(cipherDataBuf, cipherDataBuf + end + 9, place - end - 9);
+						place -= end + 9;
+						break;
+					}
+				}
 				char recBuf[4000];
+				char encryptRecBuf[4000];
+				char sendBuf[4018];
 				size = 0;
 				memset(recBuf, 0, 4000);
+				memset(encryptRecBuf, 0, 4000);
+				memset(sendBuf, 0, 4018);
 				size = audioRecorder.fetchData(4000, recBuf);
-				voiceServer->sendData(recBuf, size);
+				if (size > 0) {
+					cfbEncryption = new CFB_Mode<AES>::Encryption(key, AES::MAX_KEYLENGTH, iv);
+					cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, size);
+					delete cfbEncryption;
+					memcpy(sendBuf, "123456789", 9);
+					memcpy(sendBuf + 9, encryptRecBuf, size);
+					memcpy(sendBuf + 9 + size, "987654321", 9);
+					voiceServer->sendData(sendBuf, size+18);
+				}
 
 				if (memcmp(msg, endCall, 8) == 0)
 				{
@@ -93,6 +158,9 @@ DWORD WINAPI serverListener(LPVOID IpParam)
 
 DWORD WINAPI clientListener(LPVOID IpParam)
 {
+	char cipherDataBuf[200000];
+	memset(cipherDataBuf, 0, 200000);
+	int place = 0;
 	while (1)
 	{
 		Sleep(1);
@@ -116,15 +184,54 @@ DWORD WINAPI clientListener(LPVOID IpParam)
 			if (clientStatus == 1)
 			{
 				char voiceBuf[4000];
+				char encryptVoiceBuf[4018];
 				memset(voiceBuf, 0, 4000);
+				memset(encryptVoiceBuf, 0, 4018);
 				int size = 0;
-				size = voiceClient->fetchData(4000, voiceBuf);
-				audioPlayer.writeData(size, voiceBuf);
+				size = voiceClient->fetchData(4018, encryptVoiceBuf);
+				if (size > 0) {
+					memcpy(cipherDataBuf + place, encryptVoiceBuf, size);
+					place += size;
+				}
+				int start = -1;
+				int end = -1;
+				for (int i = 0; i < place - 9; i++)
+				{
+					if (cipherDataBuf[i] == '1'&&cipherDataBuf[i + 1] == '2'&&cipherDataBuf[i + 2] == '3'&&cipherDataBuf[i + 3] == '4'&&cipherDataBuf[i + 4] == '5'&&cipherDataBuf[i + 5] == '6'&&cipherDataBuf[i + 6] == '7'&&cipherDataBuf[i + 7] == '8'&&cipherDataBuf[i + 8] == '9')
+					{
+						start = i + 9;
+					}
+					if (start != -1 && cipherDataBuf[i] == '9'&&cipherDataBuf[i + 1] == '8'&&cipherDataBuf[i + 2] == '7'&&cipherDataBuf[i + 3] == '6'&&cipherDataBuf[i + 4] == '5'&&cipherDataBuf[i + 5] == '4'&&cipherDataBuf[i + 6] == '3'&&cipherDataBuf[i + 7] == '2'&&cipherDataBuf[i + 8] == '1')
+					{
+						end = i;
+						cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
+						cfbDecryption->ProcessData((byte*)voiceBuf, (byte*)cipherDataBuf + start, end - start);
+						delete cfbDecryption;
+						audioPlayer.writeData(end - start, voiceBuf);
+						memcpy(cipherDataBuf, cipherDataBuf + end + 9, place - end - 9);
+						place -= end + 9;
+						break;
+					}
+				}
+					
 				char recBuf[4000];
+				char encryptRecBuf[4000];
+				char sendBuf[4018];
 				memset(recBuf, 0, 4000);
+				memset(encryptRecBuf, 0, 4000);
+				memset(sendBuf, 0, 4018);
 				size = 0;
 				size = audioRecorder.fetchData(4000, recBuf);
-				voiceClient->sendData(recBuf, size);
+				if (size > 0)
+				{
+					cfbEncryption = new CFB_Mode<AES>::Encryption(key, AES::MAX_KEYLENGTH, iv);
+					cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, size);
+					delete cfbEncryption;
+					memcpy(sendBuf, "123456789", 9);
+					memcpy(sendBuf + 9, encryptRecBuf, size);
+					memcpy(sendBuf + 9 + size, "987654321", 9);
+					voiceClient->sendData(sendBuf, size+18);
+				}
 			}
 		}
 	}
@@ -183,7 +290,7 @@ void switchPage(int pagex)
 	if (pagex == MAIN_PAGE)
 	{
 		ShowWindow(p2pButton, SW_SHOW);
-		ShowWindow(multiButton, SW_SHOW);
+		//ShowWindow(multiButton, SW_SHOW);
 	}
 	else if (pagex == P2P_INIT)
 	{
@@ -217,6 +324,9 @@ void switchPage(int pagex)
 		SetWindowText(p2pCallingTargetIpText, text);
 		ShowWindow(p2pCallingTargetIpText, SW_SHOW);
 		ShowWindow(p2pCallingCancelButton, SW_SHOW);
+		//audioPlayer.startPlay();
+		//audioRecorder.startRecord();
+		//msgServer->sendData(acceptCall, 8);
 	}
 	else if (pagex == P2P_RINGING)
 	{
@@ -275,6 +385,53 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CREATE:
 		{
 			hwndMain = hwnd;
+
+			memset(iv, 0, 16);
+			char keyHex[128];
+			memset(keyHex, 0, 128);
+			readKey("key.ini", keyHex);
+			char keyChar[32];
+			hex2bytes(keyChar, keyHex);
+			memcpy(key, keyChar, 32);
+			//for (int i = 0; i < 32; i++)
+			//{
+			//	key[i] -= 128;
+			//}
+
+
+			//cfbEncryption = new CFB_Mode<AES>::Encryption(key, 32, iv);
+			//char recBuf[20];
+			//char encryptRecBuf[20];
+			//recBuf[0] = -128;
+
+			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 1);
+			//
+			//
+			//
+ 		//	cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
+
+			
+
+
+			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
+			//cfbEncryption = new CFB_Mode<AES>::Encryption(key, AES::MAX_KEYLENGTH, iv);
+			//cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
+			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
+			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
+			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
+			
+			//byte buf[21] = "12345678901234567890";
+			//byte xxx[21];
+			//byte buf2[41];
+			//byte xxxx[41];
+			//cfbEncryption->ProcessData((byte*)xxx, (byte*)buf, 20);
+			//memcpy(xxxx, xxx, 20);
+			//memcpy(xxxx+20, xxx, 20);
+			//cfbDecryption->ProcessData(buf2, xxxx+21, 7);
+
+
+
+
 			HFONT defaultFont;
 			//defaultFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 			defaultFont = CreateFont(16, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
@@ -316,6 +473,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			serverListenerThread = CreateThread(NULL, 0, serverListener, 0, 0, &serverListenerThreadID);
 			clientListenerThread = CreateThread(NULL, 0, clientListener, 0, 0, &clientListenerThreadID);
+
+			
+
 			return 0;
 		}
 		case WM_COMMAND:

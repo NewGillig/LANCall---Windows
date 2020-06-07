@@ -1,0 +1,41 @@
+
+IS_MINGW: 1
+IS_X64: 1
+
+HAVE_CXX03: 0
+HAVE_GNU03: 0
+HAVE_CXX11: 0
+HAVE_GNU11: 0
+
+OPT_O2: 
+OPT_O3: 
+
+HAVE_ASAN: 0
+HAVE_UBSAN: 0
+HAVE_BSAN: 0
+HAVE_CET: 0
+HAVE_REPTOLINE: 0
+HAVE_VALGRIND: 
+
+CPU: 4 logical
+FREQ: 1.57031 GHz
+MEM: 4021 MB
+
+Compiler: 
+Pathname: 
+
+DEBUG_CXXFLAGS: -DDEBUG  
+RELEASE_CXXFLAGS: -DNDEBUG  
+VALGRIND_CXXFLAGS: -DNDEBUG  
+
+Start time: Sun, May 24, 2020 10:21:34 AM
+************************************
+Testing: No Posix NDEBUG or assert
+Verified no Posix NDEBUG or assert
+************************************
+Testing: C++ std::min and std::max
+Verified std::min and std::max
+************************************
+Testing: Debug, default CXXFLAGS
+bash: make: command not found
+ERROR: failed to make cryptest.exe

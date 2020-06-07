@@ -18,7 +18,7 @@ private:
 	WAVEHDR wh;
 	WAVEFORMATEX wavform;
 	char audioBuf[BUFSIZE];
-	char whBuf[640];
+	char whBuf[2000];
 	LPWAVEHDR p;
 	volatile int recPos;
 	volatile int readPos;

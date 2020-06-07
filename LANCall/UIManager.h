@@ -1,4 +1,5 @@
 #pragma once
+
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -13,6 +14,8 @@
 #include "AudioRecorder.h"
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"Ws2_32.lib")
+
+#include "Crypto.h"
 
 #define MAIN_PAGE 0
 #define P2P_INIT 1
