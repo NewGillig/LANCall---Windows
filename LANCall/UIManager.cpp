@@ -324,9 +324,6 @@ void switchPage(int pagex)
 		SetWindowText(p2pCallingTargetIpText, text);
 		ShowWindow(p2pCallingTargetIpText, SW_SHOW);
 		ShowWindow(p2pCallingCancelButton, SW_SHOW);
-		//audioPlayer.startPlay();
-		//audioRecorder.startRecord();
-		//msgServer->sendData(acceptCall, 8);
 	}
 	else if (pagex == P2P_RINGING)
 	{
@@ -393,41 +390,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			char keyChar[32];
 			hex2bytes(keyChar, keyHex);
 			memcpy(key, keyChar, 32);
-			//for (int i = 0; i < 32; i++)
-			//{
-			//	key[i] -= 128;
-			//}
-
-
-			//cfbEncryption = new CFB_Mode<AES>::Encryption(key, 32, iv);
-			//char recBuf[20];
-			//char encryptRecBuf[20];
-			//recBuf[0] = -128;
-
-			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 1);
-			//
-			//
-			//
- 		//	cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
-
-			
-
-
-			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
-			//cfbEncryption = new CFB_Mode<AES>::Encryption(key, AES::MAX_KEYLENGTH, iv);
-			//cfbDecryption = new CFB_Mode<AES>::Decryption(key, AES::MAX_KEYLENGTH, iv);
-			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
-			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
-			//cfbEncryption->ProcessData((byte*)encryptRecBuf, (byte*)recBuf, 20);
-			
-			//byte buf[21] = "12345678901234567890";
-			//byte xxx[21];
-			//byte buf2[41];
-			//byte xxxx[41];
-			//cfbEncryption->ProcessData((byte*)xxx, (byte*)buf, 20);
-			//memcpy(xxxx, xxx, 20);
-			//memcpy(xxxx+20, xxx, 20);
-			//cfbDecryption->ProcessData(buf2, xxxx+21, 7);
 
 
 
@@ -486,14 +448,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				{
 					switchPage(P2P_INIT);
 					break;
-					/*audioRecorder.startRecord();
+					audioRecorder.startRecord();
 					audioPlayer.startPlay();
 					while (1)
 					{
 						char buf[640];
 						audioRecorder.fetchData(640, buf);
 						audioPlayer.writeData(640, buf);
-					}*/
+					}
 
 				}
 				case P2P_BACK_BUTTON:
@@ -527,10 +489,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					mode = 1;		//client mode
 					clientStatus = 0;	//calling
 
-					/*char msg[20] = "Hello Server";
-					msgClient->sendData(msg, 12);
-					char msg2[20];
-					int s = msgServer->fetchData(20, msg2);*/
 					switchPage(P2P_CALLING);
 					break;
 				}
