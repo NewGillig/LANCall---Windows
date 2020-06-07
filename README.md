@@ -6,7 +6,7 @@ This application is compatible with LANCall---Android：
 
 https://github.com/NewGillig/LANCall---Android
 
-key.ini stores the 256-bit AES key. Make sure the key is the same to your peer.
+key.ini stores the 256-bit AES key in HEX. Make sure the key is the same to your peer.
 
 Put key.ini in the same directory of LANCall.exe
 
